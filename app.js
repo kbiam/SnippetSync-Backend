@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 const corsOptions = { 
-  origin: 'http://localhost:5173',  
+  origin:[ 'http://localhost:5173', 'https://snippet-sync-frontend.vercel.app'],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true 
 }

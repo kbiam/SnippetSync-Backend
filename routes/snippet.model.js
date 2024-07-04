@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
-mongoose.connect("mongodb://localhost:27017/CodeSnippet")
+mongoose.connect("mongodb+srv://kushbang123:El3qAGsZPa2gJqGC@cluster0.719zpms.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+
 
 const snippetSchema = new mongoose.Schema({
     userId: {

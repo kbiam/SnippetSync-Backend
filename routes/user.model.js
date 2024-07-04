@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
-mongoose.connect("mongodb://localhost:27017/CodeSnippet")
+// mongoose.connect("mongodb://localhost:27017/CodeSnippet")
+// mongoose.connect("mongodb+srv://kushbang123:<password>@cluster0.719zpms.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
 const userSchema = new mongoose.Schema({
     userName:{
