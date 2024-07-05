@@ -28,7 +28,6 @@ const userSchema = new mongoose.Schema({
     }],
     languages:[{
         type:String,
-        unique:true
     }]
 })
 
