@@ -287,7 +287,7 @@ router.post('/checkState',async(req, res)=>{
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+    console.log("decoding")
     // Check if token is expired
     if (Date.now() >= decoded.exp * 1000) {
       // Token is expired
