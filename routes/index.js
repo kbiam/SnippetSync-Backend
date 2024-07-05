@@ -278,7 +278,10 @@ router.post("/snippets", async(req,res)=>{
 })
 
 router.post('/checkState',async(req, res)=>{
-  const token = req.cookies.token
+  // const token = req.cookies.token
+  const authHeader = req.headers['authorization'];
+  console.log(authHeader)
+  const token = authHeader && authHeader.split(' ')[1];
   console.log("token recieved",token)
   if (!token) {
     console.log("not found")
