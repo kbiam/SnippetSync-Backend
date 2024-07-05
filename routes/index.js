@@ -277,11 +277,11 @@ router.post("/snippets", async(req,res)=>{
 
 })
 
-router.post('/checkState',async(req, res)=>{
-  const token = req.cookies.token
+router.post('/checkState', async (req, res) => {
+  const token = req.cookies.token;
   
   if (!token) {
-    res.sendStatus(404)
+    return res.status(404).json({ message: 'Token not found' });
   }
 
   try {
@@ -304,7 +304,7 @@ router.post('/checkState',async(req, res)=>{
     console.error('JWT verification error:', error);
     return res.status(401).json({ message: 'Please Login Again' });
   }
-})
+});
 
 
 router.post("/startAgain",async (req,res)=>{
