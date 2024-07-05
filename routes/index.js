@@ -25,101 +25,68 @@ const transporter = nodemailer.createTransport({
 /* GET home page. */
 
 
-router.post('/register',async(req,res)=>{
-  const username = req.body.username
-  const password = req.body.password
-  const email = req.body.email
-    // Validate username
-    // if (!username) {
-    //   return res.status(400).json({ error: 'Username is required.' });
-    // }
-    // if (username.length < 3 || username.length > 20) {
-    //   return res.status(400).json({ error: 'Username must be between 3 and 20 characters long.' });
-    // }
-    // if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-    //   return res.status(400).json({ error: 'Username must contain only letters, numbers, and underscores.' });
-    // }
-  
-    // // Validate password
-    // if (!password) {
-    //   return res.status(400).json({ error: 'Password is required.' });
-    // }
-    // if (password.length < 8) {
-    //   return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
-    // }
-    // if (!/\d/.test(password)) {
-    //   return res.status(400).json({ error: 'Password must contain at least one number.' });
-    // }
-    // if (!/[a-z]/.test(password)) {
-    //   return res.status(400).json({ error: 'Password must contain at least one lowercase letter.' });
-    // }
-    // if (!/[A-Z]/.test(password)) {
-    //   return res.status(400).json({ error: 'Password must contain at least one uppercase letter.' });
-    // }
-    // if (!/[@$!%*?&]/.test(password)) {
-    //   return res.status(400).json({ error: 'Password must contain at least one special character.' });
-    // }
-  
-    // Validate email
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required.' });
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Email must be a valid email address.' });
-    }
+router.post('/register', async (req, res) => {
+  const { username, password, email } = req.body;
 
-    const existingUser = await userSchema.findOne({ email: email, verified: true});
-    if (existingUser) {
-      return res.status(400).json({ error: 'User already exists.' });
-    }
-    const existingUserNotVerified = await userSchema.findOne({ email: email, verified: false});
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required.' });
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: 'Email must be a valid email address.' });
+  }
+
+  const existingUser = await userSchema.findOne({ email: email, verified: true });
+  if (existingUser) {
+    return res.status(400).json({ error: 'User already exists.' });
+  }
+  const existingUserNotVerified = await userSchema.findOne({ email: email, verified: false });
+  console.log(existingUserNotVerified)
+
+  if (existingUserNotVerified) {
     console.log(existingUserNotVerified)
+    await userVerification.deleteMany({ userId: existingUserNotVerified._id });
+    sentOtpforVerification(existingUserNotVerified, res);
+  } else {
+    const newUser = new userSchema({
+      userName: username,
+      email: email,
+      password: password,
+      verified: false
+    });
+    newUser.save()
+      .then((result) => {
+        console.log("Account created")
+        sentOtpforVerification(result, res);
+      });
+  }
+});
 
-    if(existingUserNotVerified){
-      console.log(existingUserNotVerified)
-      await userVerification.deleteMany({userId:existingUserNotVerified._id})
-      sentOtpforVerification(existingUserNotVerified,res)
-    }
-    else{
-      const newUser = new userSchema({
-        userName:username,
-        email:email,
-        password:password,
-        verified:false
-      })
-      newUser.save()
-      .then((result) => {console.log("Account created")
-        sentOtpforVerification(result,res)})
-    }
-  })
     
 
     
 
-router.post('/login',async (req,res)=>{
-  const email = req.body.email
-  const password = req.body.password
-
-  const user = await userSchema.findOne({email:email})
-  if (!user) {
-    return res.json({error:"No such user exists"});
-  }
-
-  if(!user.verified){
-    sentOtpforVerification(user,res)
-
-  }
-  //bcrypt 
-  const isMatch = await bcrypt.compare(password, user.password)
-  if (!isMatch) {
-      return res.json({error:"Password is incorrect"});
-  }
-  else{
-    const token = jwt.sign({ userId: user._id, verified: true }, process.env.JWT_SECRET, {expiresIn:'5d'});
-    return res.json({token:token})
-  }
-})
+  router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+  
+    const user = await userSchema.findOne({ email: email });
+    if (!user) {
+      return res.json({ error: "No such user exists" });
+    }
+  
+    if (!user.verified) {
+      sentOtpforVerification(user, res);
+    } else {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.json({ error: "Password is incorrect" });
+      } else {
+        const token = jwt.sign({ userId: user._id, verified: true }, process.env.JWT_SECRET, { expiresIn: '5d' });
+        return res.json({ token: token });
+      }
+    }
+  });
+    
 router.post('/verifyOtp',async(req,res)=>{
   // const token = req.cookies.token
   const authHeader = req.headers['authorization'];
@@ -353,40 +320,36 @@ router.post("/startAgain",async (req,res)=>{
 
 //otp
 
-const sentOtpforVerification = async({_id,email},res)=>{
+const sentOtpforVerification = async({_id, email}, res) => {
   const otp = Math.floor(100000 + Math.random() * 900000);
 
   const mailOptions = {
     from: process.env.USER,
     to: email,
-    subject:"Verify your Email",
-    html:`<p>Enter <b>${otp}</b> in the app to verify your email address and complete your registration</p>
+    subject: "Verify your Email",
+    html: `<p>Enter <b>${otp}</b> in the app to verify your email address and complete your registration</p>
           <p>This code expires in 1 hour</p>.`
   }
   const saltrounds = 10
-  // const hashedOtp = await bcrypt.hash(otp,saltrounds)
   const userVerificationOtp = await new userVerification({
-    userId:_id,
-    otp:otp,
-    createdAt:Date.now(),
-    expiresAt:Date.now() + 3600000
+    userId: _id,
+    otp: otp,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + 3600000
   })
   await userVerificationOtp.save()
   const mail = await transporter.sendMail(mailOptions)
   console.log(mail)
   const token = jwt.sign({ userId: _id, verified: false }, process.env.JWT_SECRET, { expiresIn: '2h' });
-  console.log("sending token",token)
-  if(token){
-    console.log("sending token",token)
-    res.json({
-      message:"Email sent",
-      data:{
-        token:token
-      }
-    }).sendStatus(200);
-  }
-
+  console.log("sending token", token)
+  res.json({
+    message: "Email sent",
+    data: {
+      token: token
+    }
+  }); // Ensure this is the only response sent
 }
+
 
 
 //middleware
