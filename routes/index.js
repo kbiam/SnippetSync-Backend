@@ -375,13 +375,15 @@ const sentOtpforVerification = async({_id,email},res)=>{
   const mail = await transporter.sendMail(mailOptions)
   console.log(mail)
   const token = jwt.sign({ userId: _id, verified: false }, process.env.JWT_SECRET, { expiresIn: '2h' });
+  console.log("sending token",token)
   if(token){
+    console.log("sending token",token)
     res.json({
       message:"Email sent",
       data:{
         token:token
       }
-    })
+    }).sendStatus(200);
   }
 
 }
