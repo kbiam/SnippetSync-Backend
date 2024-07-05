@@ -121,8 +121,10 @@ router.post('/login',async (req,res)=>{
   }
 })
 router.post('/verifyOtp',async(req,res)=>{
-  const token = req.cookies.token
-
+  // const token = req.cookies.token
+  const authHeader = req.headers['authorization'];
+  console.log(authHeader)
+  const token = authHeader && authHeader.split(' ')[1];
   const otp = req.body.otp
   if(!otp){
     return res.status(400).json({error:"Otp is required"})
@@ -159,7 +161,10 @@ router.post('/verifyOtp',async(req,res)=>{
 
 })
 router.post('/addSnippet',async(req,res)=>{
-  const token = req.cookies.token
+  // const token = req.cookies.token
+  const authHeader = req.headers['authorization'];
+  console.log(authHeader)
+  const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
     return res.status(401).json({ error: 'Token missing' });
@@ -190,7 +195,10 @@ router.post('/addSnippet',async(req,res)=>{
 
 })
 router.post("/deleteSnippet", async (req, res) => {
-  const token = req.cookies.token;
+  // const token = req.cookies.token;
+  const authHeader = req.headers['authorization'];
+  console.log(authHeader)
+  const token = authHeader && authHeader.split(' ')[1];
   if (!token) {
     return res.status(401).json({ error: 'Token missing' });
   }
@@ -231,7 +239,10 @@ router.post("/deleteSnippet", async (req, res) => {
 
 
 router.post("/updateSnippet",async(req, res)=>{
-  const token = req.cookies.token
+  // const token = req.cookies.token
+  const authHeader = req.headers['authorization'];
+  console.log(authHeader)
+  const token = authHeader && authHeader.split(' ')[1];
   if (!token) {
     return res.status(401).json({ error: 'Token missing' });
   }
@@ -252,7 +263,10 @@ router.post("/updateSnippet",async(req, res)=>{
 })
 
 router.get("/userLanguages",async(req,res)=>{
-  const token = req.cookies.token
+  // const token = req.cookies.token
+  const authHeader = req.headers['authorization'];
+  console.log(authHeader)
+  const token = authHeader && authHeader.split(' ')[1];
   if (!token) {
     return res.status(401).json({ error: 'Token missing' });
   }
@@ -264,7 +278,10 @@ router.get("/userLanguages",async(req,res)=>{
 })
 
 router.post("/snippets", async(req,res)=>{
-  const token = req.cookies.token
+  // const token = req.cookies.token
+  const authHeader = req.headers['authorization'];
+  console.log(authHeader)
+  const token = authHeader && authHeader.split(' ')[1];
   if (!token) {
     return res.status(401).json({ error: 'Token missing' });
   }
@@ -312,7 +329,10 @@ router.post('/checkState',async(req, res)=>{
 
 
 router.post("/startAgain",async (req,res)=>{
-  const token = req.cookies.token
+  // const token = req.cookies.token
+  const authHeader = req.headers['authorization'];
+  console.log(authHeader)
+  const token = authHeader && authHeader.split(' ')[1];
   if (!token) {
     res.sendStatus(404)
   }
