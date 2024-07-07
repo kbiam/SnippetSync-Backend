@@ -262,8 +262,14 @@ router.post("/snippets", async(req,res)=>{
 })
 router.post("/snippetDets",async(req,res)=>{
   const {snippetId} = req.body
-  const snippet = await SnippetSchema.findById(snippetId)
-  res.json(snippet)
+  const snippet = await SnippetSchema.findOne({_id : snippetId})
+  if(snippet){
+    console.log(snippet)
+    res.json(snippet)
+  }
+  else{
+    res.json(404)
+  }
 })
 
 router.post('/checkState',async(req, res)=>{
