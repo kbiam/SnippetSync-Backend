@@ -260,6 +260,11 @@ router.post("/snippets", async(req,res)=>{
   res.json(user.snippets)
 
 })
+router.post("/snippetDets",async(req,res)=>{
+  const {snippetId} = req.body
+  const snippet = await SnippetSchema.findById(snippetId)
+  res.json(snippet)
+})
 
 router.post('/checkState',async(req, res)=>{
   // const token = req.cookies.token
