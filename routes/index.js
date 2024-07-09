@@ -179,7 +179,7 @@ router.post('/resetPassword',async(req,res)=>{
 
   user.password = newPassword;
   await user.save()
-  await userVerification.remove()
+  await UserVerification.deleteOne({userId:user._id});
   return res.sendStatus(200);
 
 })
