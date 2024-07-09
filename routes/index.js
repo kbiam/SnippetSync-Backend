@@ -81,7 +81,7 @@ router.post('/register', async (req, res) => {
       if (!isMatch) {
         return res.json({ error: "Password is incorrect" });
       } else {
-        const token = jwt.sign({ userId: user._id, verified: true }, process.env.JWT_SECRET, { expiresIn: '5d' });
+        const token = jwt.sign({ userId: user._id, verified: true }, process.env.JWT_SECRET, { expiresIn: '10d' });
         return res.json({ token: token });
       }
     }
@@ -112,7 +112,7 @@ router.post('/verifyOtp',async(req,res)=>{
 
   await userSchema.updateOne({_id:userId},{verified:true})
 
-  const newToken = jwt.sign({ userId: userId, verified: true }, process.env.JWT_SECRET, {expiresIn:'5d'});
+  const newToken = jwt.sign({ userId: userId, verified: true }, process.env.JWT_SECRET, {expiresIn:'10d'});
   if(newToken){
     res.json({
       message: 'Email verified successfully.',
@@ -127,6 +127,61 @@ router.post('/verifyOtp',async(req,res)=>{
 
 
 })
+
+router.post('/forgotPassword',async(req,res)=>{
+  const email = req.body.email
+  if(!email){
+    return res.status(400).json({error:"Email is required"})
+  }
+  const user = await userSchema.findOne({email : email})
+  if(!user){
+    return res.status(400).json({error:"User not found"})
+  }
+  const otp = Math.floor(1000 + Math.random() * 9000)
+  const userVerification = new UserVerification({
+    userId : user._id,
+    otp : otp,
+    createdAt:Date.now(),
+    expiresAt : Date.now() + 360000
+  })
+  await userVerification.save()
+  
+  const mailOptions = {
+    from: process.env.USER,
+    to: email,
+    subject: "Verify your Email",
+    html: `<p>Enter <b>${otp}</b> in the app to verify your email address and reset your password</p>
+          <p>This code expires in 1 hour</p>.`
+  }
+  await transporter.sendMail(mailOptions)
+res.json({message:"Email sent successfully"})
+})
+router.post('/resetPassword',async(req,res)=>{
+  const email = req.body.email
+  const newPassword = req.body.newPassword
+  const otp = req.body.otp
+
+  if(!email || !newPassword || !otp){
+    return res.status(400)
+  }
+  const user = await userSchema.findOne({email : email})
+  if(!user){
+    return res.status(400).json({error:"User not found"})
+  }
+  const userVerification = await UserVerification.findOne({userId : user._id, otp : otp})
+  if(!userVerification){
+    return res.status(400).json({error:"Invalid OTP"})
+  }
+  if(userVerification.expiresAt < Date.now()){
+    return res.status(400).json({error:"OTP expired"})
+  }
+
+  user.password = newPassword;
+  await user.save()
+  return res.sendStatus(200);
+
+})
+
 router.post('/addSnippet',async(req,res)=>{
   // const token = req.cookies.token
   const authHeader = req.headers['authorization'];
@@ -368,8 +423,6 @@ function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   console.log(authHeader)
   const token = authHeader && authHeader.split(' ')[1];
-  // const token = token;
-
   if (!token) {
     return res.sendStatus(401); // Unauthorized
   }
