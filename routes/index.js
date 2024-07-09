@@ -137,7 +137,7 @@ router.post('/forgotPassword',async(req,res)=>{
   if(!user){
     return res.status(400).json({error:"User not found"})
   }
-  const otp = Math.floor(1000 + Math.random() * 9000)
+  const otp = Math.floor(100000 + Math.random() * 900000);
   const userVerification = new UserVerification({
     userId : user._id,
     otp : otp,
@@ -178,6 +178,7 @@ router.post('/resetPassword',async(req,res)=>{
 
   user.password = newPassword;
   await user.save()
+  await userVerification.remove()
   return res.sendStatus(200);
 
 })
